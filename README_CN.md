@@ -1,33 +1,32 @@
-# cache (This is a community driven project)
+# cache (这是一个社区驱动的项目)
+[English](README.md) | 中文
 
-English | [中文](README_CN.md)
+这是 Hertz 的一个中间件。
 
-This is a middleware for hertz.
-
-Hertz middleware for cache response management with multi-backend support:
+是一个用于缓存响应的 Hertz 中间件，支持 multi-backend。
 
 - [memory](#memory)
 - [redis](#redis)
 
- This repo is forked from [gin-cache](https://github.com/chenyahui/gin-cache) and adapted for hertz.
+这个仓库是从 [gin-cache](https://github.com/chenyahui/gin-cache) fork 而来的，并为 hertz 进行了适配。
 
-## Usage
+## 使用方法
 
-### Start using it
+### 开始使用
 
-Download and install it:
+如何下载并安装它：
 
 ```bash
 go get github.com/hertz-contrib/cache
 ```
 
-Import it in your code:
+如何导入进你的代码：
 
 ```go
 import "github.com/hertz-contrib/cache"
 ```
 
-## Basic Examples
+## 示例代码
 
 ### memory
 
@@ -111,6 +110,6 @@ func main() {
 }
 ```
 
-## License
+## 许可证
 
-This project is under Apache License. See the [LICENSE-APACHE](LICENSE-APACHE) file for the full license text.
+本项目采用Apache许可证。参见 [LICENSE-APACHE](LICENSE-APACHE) 文件中的完整许可证文本。
