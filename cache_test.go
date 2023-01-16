@@ -75,7 +75,7 @@ func hertzHandler(middleware app.HandlerFunc, withRand bool) *route.Engine {
 
 func TestCacheByRequestPath(t *testing.T) {
 	memoryStore := persist.NewMemoryStore(1 * time.Minute)
-	cachePathMiddleware := CacheByRequestPath(memoryStore, 3*time.Second)
+	cachePathMiddleware := NewCacheByRequestPath(memoryStore, 3*time.Second)
 
 	handler := hertzHandler(cachePathMiddleware, true)
 
@@ -92,7 +92,7 @@ func TestCacheByRequestPath(t *testing.T) {
 func TestCacheHitMissCallback(t *testing.T) {
 	var cacheHitCount, cacheMissCount int32
 	memoryStore := persist.NewMemoryStore(1 * time.Minute)
-	cachePathMiddleware := CacheByRequestPath(memoryStore, 3*time.Second,
+	cachePathMiddleware := NewCacheByRequestPath(memoryStore, 3*time.Second,
 		WithOnHitCache(func(ctx context.Context, c *app.RequestContext) {
 			atomic.AddInt32(&cacheHitCount, 1)
 		}),
@@ -112,7 +112,7 @@ func TestCacheHitMissCallback(t *testing.T) {
 
 func TestCacheDuration(t *testing.T) {
 	memoryStore := persist.NewMemoryStore(1 * time.Minute)
-	cacheURIMiddleware := CacheByRequestURI(memoryStore, 3*time.Second)
+	cacheURIMiddleware := NewCacheByRequestURI(memoryStore, 3*time.Second)
 	handler := hertzHandler(cacheURIMiddleware, true)
 
 	w1 := ut.PerformRequest(handler, "GET", "/cache?uid=u1", nil)
@@ -129,7 +129,7 @@ func TestCacheDuration(t *testing.T) {
 
 func TestCacheByRequestURI(t *testing.T) {
 	memoryStore := persist.NewMemoryStore(1 * time.Minute)
-	cacheURIMiddleware := CacheByRequestURI(memoryStore, 3*time.Second)
+	cacheURIMiddleware := NewCacheByRequestURI(memoryStore, 3*time.Second)
 	handler := hertzHandler(cacheURIMiddleware, true)
 
 	w1 := ut.PerformRequest(handler, "GET", "/cache?uid=u1", nil)
@@ -159,7 +159,7 @@ func hertzHeaderHandler(middleware app.HandlerFunc) *route.Engine {
 
 func TestHeader(t *testing.T) {
 	memoryStore := persist.NewMemoryStore(1 * time.Minute)
-	cacheURIMiddleware := CacheByRequestURI(memoryStore, 3*time.Second)
+	cacheURIMiddleware := NewCacheByRequestURI(memoryStore, 3*time.Second)
 	headerHandler := hertzHeaderHandler(cacheURIMiddleware)
 
 	w1 := ut.PerformRequest(headerHandler, "GET", "/cache", nil)
@@ -170,7 +170,7 @@ func TestHeader(t *testing.T) {
 
 func TestConcurrentRequest(t *testing.T) {
 	memoryStore := persist.NewMemoryStore(1 * time.Minute)
-	cacheURIMiddleware := CacheByRequestURI(memoryStore, 1*time.Second)
+	cacheURIMiddleware := NewCacheByRequestURI(memoryStore, 1*time.Second)
 	handler := hertzHandler(cacheURIMiddleware, false)
 
 	wg := sync.WaitGroup{}
@@ -205,7 +205,7 @@ func writeHeaderHandler(middleware app.HandlerFunc) *route.Engine {
 
 func TestWriteHeader(t *testing.T) {
 	memoryStore := persist.NewMemoryStore(1 * time.Minute)
-	cacheURIMiddleware := CacheByRequestURI(memoryStore, 3*time.Second)
+	cacheURIMiddleware := NewCacheByRequestURI(memoryStore, 3*time.Second)
 
 	handler := writeHeaderHandler(cacheURIMiddleware)
 	w1 := ut.PerformRequest(handler, "GET", "/cache", nil)
@@ -228,7 +228,7 @@ const prefixKey = "#prefix#"
 
 func TestPrefixKey(t *testing.T) {
 	memoryStore := persist.NewMemoryStore(1 * time.Minute)
-	cacheURIMiddleware := CacheByRequestPath(
+	cacheURIMiddleware := NewCacheByRequestPath(
 		memoryStore,
 		3*time.Second,
 		WithPrefixKey(prefixKey),

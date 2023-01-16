@@ -60,7 +60,7 @@ func main() {
 
 	var cacheHitCount, cacheMissCount int32
 
-	h.Use(cache.CacheByRequestURI(
+	h.Use(cache.NewCacheByRequestURI(
 		memoryStore,
 		2*time.Second,
 		cache.WithOnHitCache(func(ctx context.Context, c *app.RequestContext) {

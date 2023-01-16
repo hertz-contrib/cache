@@ -52,9 +52,8 @@ import (
 	"time"
 	"unsafe"
 
-	"github.com/cloudwego/hertz/pkg/common/hlog"
-
 	"github.com/cloudwego/hertz/pkg/app"
+	"github.com/cloudwego/hertz/pkg/common/hlog"
 	"github.com/cloudwego/hertz/pkg/protocol"
 	"golang.org/x/sync/singleflight"
 )
@@ -83,17 +82,17 @@ const (
 	writeResponseErrorFormat                 = "[CACHE] write response error: %s"
 )
 
-// Cache user must pass getCacheKey to describe the way to generate cache key
-func Cache(
+// NewCache user must pass getCacheKey to describe the way to generate cache key
+func NewCache(
 	defaultCacheStore persist.CacheStore,
 	defaultExpire time.Duration,
 	opts ...Option,
 ) app.HandlerFunc {
 	options := newOptions(opts...)
-	return cache(defaultCacheStore, defaultExpire, options)
+	return newCache(defaultCacheStore, defaultExpire, options)
 }
 
-func cache(
+func newCache(
 	defaultCacheStore persist.CacheStore,
 	defaultExpire time.Duration,
 	options *Options,
@@ -133,13 +132,13 @@ func cache(
 			respCache := &ResponseCache{}
 			err := cacheStore.Get(ctx, cacheKey, &respCache)
 			if err == nil {
-				replyWithCache(c, options, respCache)
+				replyWithCache(ctx, c, options, respCache)
 				options.hitCacheCallback(ctx, c)
 				return
 			}
 
 			if !errors.Is(err, persist.ErrCacheMiss) {
-				hlog.Errorf(getCacheErrorFormat, err, cacheKey)
+				hlog.CtxErrorf(ctx, getCacheErrorFormat, err, cacheKey)
 			}
 			options.missCacheCallback(ctx, c)
 		}
@@ -170,7 +169,7 @@ func cache(
 			// only cache 2xx response
 			if !c.IsAborted() && cacheWriter.StatusCode() < 300 && cacheWriter.StatusCode() >= 200 {
 				if err := cacheStore.Set(ctx, cacheKey, respCache, cacheDuration); err != nil {
-					hlog.Errorf(setCacheKeyErrorFormat, err, cacheKey)
+					hlog.CtxErrorf(ctx, setCacheKeyErrorFormat, err, cacheKey)
 				}
 			}
 
@@ -178,14 +177,14 @@ func cache(
 		})
 
 		if !inFlight {
-			replyWithCache(c, options, rawRespCache.(*ResponseCache))
-			options.shareSingleFlightCallback(c)
+			replyWithCache(ctx, c, options, rawRespCache.(*ResponseCache))
+			options.shareSingleFlightCallback(ctx, c)
 		}
 	}
 }
 
-// CacheByRequestURI a shortcut function for caching response by uri
-func CacheByRequestURI(defaultCacheStore persist.CacheStore, defaultExpire time.Duration, opts ...Option) app.HandlerFunc {
+// NewCacheByRequestURI a shortcut function for caching response by uri
+func NewCacheByRequestURI(defaultCacheStore persist.CacheStore, defaultExpire time.Duration, opts ...Option) app.HandlerFunc {
 	options := newOptions(opts...)
 
 	var cacheStrategy GetCacheStrategyByRequest
@@ -193,7 +192,7 @@ func CacheByRequestURI(defaultCacheStore persist.CacheStore, defaultExpire time.
 		cacheStrategy = func(ctx context.Context, c *app.RequestContext) (bool, Strategy) {
 			newUri, err := getRequestUriIgnoreQueryOrder(c.Request.URI().String())
 			if err != nil {
-				hlog.Errorf(getRequestUriIgnoreQueryOrderErrorFormat, err)
+				hlog.CtxErrorf(ctx, getRequestUriIgnoreQueryOrderErrorFormat, err)
 				newUri = c.Request.URI().String()
 			}
 
@@ -211,7 +210,7 @@ func CacheByRequestURI(defaultCacheStore persist.CacheStore, defaultExpire time.
 
 	options.getCacheStrategyByRequest = cacheStrategy
 
-	return cache(defaultCacheStore, defaultExpire, options)
+	return newCache(defaultCacheStore, defaultExpire, options)
 }
 
 func getRequestUriIgnoreQueryOrder(requestURI string) (string, error) {
@@ -243,15 +242,15 @@ func getRequestUriIgnoreQueryOrder(requestURI string) (string, error) {
 	return parsedUrl.Path + "?" + strings.Join(queryVals, "&"), nil
 }
 
-// CacheByRequestPath a shortcut function for caching response by url path, means will discard the query params
-func CacheByRequestPath(defaultCacheStore persist.CacheStore, defaultExpire time.Duration, opts ...Option) app.HandlerFunc {
+// NewCacheByRequestPath a shortcut function for caching response by url path, means will discard the query params
+func NewCacheByRequestPath(defaultCacheStore persist.CacheStore, defaultExpire time.Duration, opts ...Option) app.HandlerFunc {
 	opts = append(opts, WithCacheStrategyByRequest(func(ctx context.Context, c *app.RequestContext) (bool, Strategy) {
 		return true, Strategy{
-			CacheKey: B2s(c.Request.Path()),
+			CacheKey: b2s(c.Request.Path()),
 		}
 	}))
 
-	return Cache(defaultCacheStore, defaultExpire, opts...)
+	return NewCache(defaultCacheStore, defaultExpire, opts...)
 }
 
 func init() {
@@ -271,16 +270,16 @@ func (c *ResponseCache) fillWithCacheWriter(cacheWriter *responseCacheWriter, wi
 	if !withoutHeader {
 		c.Header = make(map[string][]string)
 		for _, val := range cacheWriter.Header.GetHeaders() {
-			if c.Header.Values(B2s(val.GetKey())) != nil {
-				c.Header.Add(B2s(val.GetKey()), B2s(val.GetValue()))
+			if c.Header.Values(b2s(val.GetKey())) != nil {
+				c.Header.Add(b2s(val.GetKey()), b2s(val.GetValue()))
 			} else {
-				c.Header.Set(B2s(val.GetKey()), B2s(val.GetValue()))
+				c.Header.Set(b2s(val.GetKey()), b2s(val.GetValue()))
 			}
 		}
 	}
 }
 
-func B2s(b []byte) string {
+func b2s(b []byte) string {
 	return *(*string)(unsafe.Pointer(&b))
 }
 
@@ -290,6 +289,7 @@ type responseCacheWriter struct {
 }
 
 func replyWithCache(
+	ctx context.Context,
 	c *app.RequestContext,
 	options *Options,
 	respCache *ResponseCache,
@@ -307,7 +307,7 @@ func replyWithCache(
 	}
 
 	if _, err := c.Response.BodyWriter().Write(respCache.Data); err != nil {
-		hlog.Errorf(writeResponseErrorFormat, err)
+		hlog.CtxErrorf(ctx, writeResponseErrorFormat, err)
 	}
 
 	// abort handler chain and return directly

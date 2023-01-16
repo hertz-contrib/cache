@@ -64,6 +64,21 @@ type Options struct {
 	withoutHeader    bool
 }
 
+// OnHitCacheCallback define the callback when use cache
+type OnHitCacheCallback app.HandlerFunc
+
+var defaultHitCacheCallback = func(ctx context.Context, c *app.RequestContext) {}
+
+// OnMissCacheCallback define the callback when use cache
+type OnMissCacheCallback app.HandlerFunc
+
+var defaultMissCacheCallback = func(ctx context.Context, c *app.RequestContext) {}
+
+// OnShareSingleFlightCallback define the callback when share the singleFlight result
+type OnShareSingleFlightCallback func(ctx context.Context, c *app.RequestContext)
+
+var defaultShareSingleFlightCallback = func(ctx context.Context, c *app.RequestContext) {}
+
 func (o *Options) Apply(opts []Option) {
 	for _, op := range opts {
 		op.F(o)
@@ -97,11 +112,6 @@ func WithCacheStrategyByRequest(getGetCacheStrategyByRequest GetCacheStrategyByR
 	}
 }
 
-// OnHitCacheCallback define the callback when use cache
-type OnHitCacheCallback app.HandlerFunc
-
-var defaultHitCacheCallback = func(ctx context.Context, c *app.RequestContext) {}
-
 // WithOnHitCache will be called when cache hit.
 func WithOnHitCache(cb OnHitCacheCallback) Option {
 	return Option{
@@ -110,11 +120,6 @@ func WithOnHitCache(cb OnHitCacheCallback) Option {
 		},
 	}
 }
-
-// OnMissCacheCallback define the callback when use cache
-type OnMissCacheCallback app.HandlerFunc
-
-var defaultMissCacheCallback = func(ctx context.Context, c *app.RequestContext) {}
 
 // WithOnMissCache will be called when cache miss.
 func WithOnMissCache(cb OnMissCacheCallback) Option {
@@ -138,11 +143,6 @@ func WithBeforeReplyWithCache(cb BeforeReplyWithCacheCallback) Option {
 	}
 }
 
-// OnShareSingleFlightCallback define the callback when share the singleflight result
-type OnShareSingleFlightCallback func(c *app.RequestContext)
-
-var defaultShareSingleFlightCallback = func(c *app.RequestContext) {}
-
 // WithOnShareSingleFlight will be called when share the singleflight result
 func WithOnShareSingleFlight(cb OnShareSingleFlightCallback) Option {
 	return Option{
@@ -153,7 +153,7 @@ func WithOnShareSingleFlight(cb OnShareSingleFlightCallback) Option {
 }
 
 // WithSingleFlightForgetTimeout to reduce the impact of long tail requests.
-// singleflight.Forget will be called after the timeout has reached for each backend request when timeout is greater than zero.
+// singleFlight.Forget will be called after the timeout has reached for each backend request when timeout is greater than zero.
 func WithSingleFlightForgetTimeout(forgetTimeout time.Duration) Option {
 	return Option{
 		F: func(o *Options) {

@@ -56,7 +56,7 @@ func main() {
 
 	memoryStore := persist.NewMemoryStore(1 * time.Minute)
 
-	h.Use(cache.CacheByRequestURI(memoryStore, 2*time.Second))
+	h.Use(cache.NewCacheByRequestURI(memoryStore, 2*time.Second))
 	h.GET("/hello", func(ctx context.Context, c *app.RequestContext) {
 		c.String(http.StatusOK, "hello world")
 	})

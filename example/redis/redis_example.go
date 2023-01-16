@@ -60,7 +60,7 @@ func main() {
 		Addr:    "127.0.0.1:6379",
 	}))
 
-	h.Use(cache.CacheByRequestURI(redisStore, 2*time.Second))
+	h.Use(cache.NewCacheByRequestURI(redisStore, 2*time.Second))
 	h.GET("/hello", func(ctx context.Context, c *app.RequestContext) {
 		c.String(http.StatusOK, "hello world")
 	})
