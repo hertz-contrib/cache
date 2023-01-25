@@ -41,9 +41,9 @@
 package main
 
 import (
-	"cache"
-	"cache/persist"
 	"context"
+	"github.com/hertz-contrib/cache"
+	"github.com/hertz-contrib/cache/persist"
 	"net/http"
 	"time"
 

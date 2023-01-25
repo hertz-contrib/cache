@@ -41,10 +41,10 @@
 package main
 
 import (
-	"cache"
-	"cache/persist"
 	"context"
 	"fmt"
+	"github.com/hertz-contrib/cache"
+	"github.com/hertz-contrib/cache/persist"
 	"net/http"
 	"sync/atomic"
 	"time"

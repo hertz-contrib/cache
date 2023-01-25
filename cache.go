@@ -41,10 +41,10 @@
 package cache
 
 import (
-	"cache/persist"
 	"context"
 	"encoding/gob"
 	"errors"
+	"github.com/hertz-contrib/cache/persist"
 	"net/http"
 	"net/url"
 	"sort"

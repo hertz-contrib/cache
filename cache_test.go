@@ -41,9 +41,9 @@
 package cache
 
 import (
-	"cache/persist"
 	"context"
 	"fmt"
+	"github.com/hertz-contrib/cache/persist"
 	"math/rand"
 	"net/http"
 	"sync"
