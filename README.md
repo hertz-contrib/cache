@@ -35,8 +35,6 @@ import "github.com/hertz-contrib/cache"
 package main
 
 import (
-    "cache"
-    "cache/persist"
     "context"
     "fmt"
     "net/http"
@@ -45,6 +43,8 @@ import (
 
     "github.com/cloudwego/hertz/pkg/app"
     "github.com/cloudwego/hertz/pkg/app/server"
+	"github.com/hertz-contrib/cache"
+	"github.com/hertz-contrib/cache/persist"
 )
 
 func main() {
@@ -84,15 +84,15 @@ func main() {
 package main
 
 import (
-    "cache"
-    "cache/persist"
     "context"
     "net/http"
     "time"
-
+    
     "github.com/cloudwego/hertz/pkg/app"
     "github.com/cloudwego/hertz/pkg/app/server"
     "github.com/go-redis/redis/v8"
+	"github.com/hertz-contrib/cache"
+	"github.com/hertz-contrib/cache/persist"
 )
 
 func main() {

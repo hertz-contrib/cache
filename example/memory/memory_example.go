@@ -42,13 +42,13 @@ package main
 
 import (
 	"context"
-	"github.com/hertz-contrib/cache"
-	"github.com/hertz-contrib/cache/persist"
 	"net/http"
 	"time"
 
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/app/server"
+	"github.com/hertz-contrib/cache"
+	"github.com/hertz-contrib/cache/persist"
 )
 
 func main() {

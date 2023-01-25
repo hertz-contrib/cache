@@ -44,7 +44,6 @@ import (
 	"context"
 	"encoding/gob"
 	"errors"
-	"github.com/hertz-contrib/cache/persist"
 	"net/http"
 	"net/url"
 	"sort"
@@ -55,6 +54,7 @@ import (
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/common/hlog"
 	"github.com/cloudwego/hertz/pkg/protocol"
+	"github.com/hertz-contrib/cache/persist"
 	"golang.org/x/sync/singleflight"
 )
 
