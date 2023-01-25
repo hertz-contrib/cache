@@ -41,7 +41,6 @@
 package cache
 
 import (
-	"cache/persist"
 	"context"
 	"encoding/gob"
 	"errors"
@@ -55,6 +54,7 @@ import (
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/common/hlog"
 	"github.com/cloudwego/hertz/pkg/protocol"
+	"github.com/hertz-contrib/cache/persist"
 	"golang.org/x/sync/singleflight"
 )
 

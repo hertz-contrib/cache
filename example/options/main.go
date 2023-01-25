@@ -41,8 +41,6 @@
 package main
 
 import (
-	"cache"
-	"cache/persist"
 	"context"
 	"fmt"
 	"net/http"
@@ -51,6 +49,8 @@ import (
 
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/app/server"
+	"github.com/hertz-contrib/cache"
+	"github.com/hertz-contrib/cache/persist"
 )
 
 func main() {

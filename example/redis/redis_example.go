@@ -41,8 +41,6 @@
 package main
 
 import (
-	"cache"
-	"cache/persist"
 	"context"
 	"net/http"
 	"time"
@@ -50,6 +48,8 @@ import (
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/app/server"
 	"github.com/go-redis/redis/v8"
+	"github.com/hertz-contrib/cache"
+	"github.com/hertz-contrib/cache/persist"
 )
 
 func main() {

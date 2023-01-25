@@ -41,7 +41,6 @@
 package cache
 
 import (
-	"cache/persist"
 	"context"
 	"fmt"
 	"math/rand"
@@ -56,6 +55,7 @@ import (
 	"github.com/cloudwego/hertz/pkg/common/test/assert"
 	"github.com/cloudwego/hertz/pkg/common/ut"
 	"github.com/cloudwego/hertz/pkg/route"
+	"github.com/hertz-contrib/cache/persist"
 )
 
 func hertzHandler(middleware app.HandlerFunc, withRand bool) *route.Engine {
