@@ -77,9 +77,10 @@ type GetCacheStrategyByRequest func(ctx context.Context, c *app.RequestContext) 
 const (
 	errMissingCacheStrategy                  = "[CACHE] cache strategy is nil"
 	getCacheErrorFormat                      = "[CACHE] get cache error: %s, cache key: %s"
-	setCacheKeyErrorFormat                   = "[CACHE] set cache key error"
+	setCacheKeyErrorFormat                   = "[CACHE] set cache key error: %s, cache key: %s"
 	getRequestUriIgnoreQueryOrderErrorFormat = "[CACHE] getRequestUriIgnoreQueryOrder error: %s"
 	writeResponseErrorFormat                 = "[CACHE] write response error: %s"
+	singleFlightErrorFormat                  = "[CACHE] call the function in-flight error: %s"
 )
 
 // NewCache user must pass getCacheKey to describe the way to generate cache key
@@ -151,7 +152,7 @@ func newCache(
 		}
 
 		inFlight := false
-		rawRespCache, _, _ := sfGroup.Do(cacheKey, func() (interface{}, error) {
+		rawRespCache, err, _ := sfGroup.Do(cacheKey, func() (interface{}, error) {
 			if options.singleFlightForgetTimeout > 0 {
 				forgetTimer := time.AfterFunc(options.singleFlightForgetTimeout, func() {
 					sfGroup.Forget(cacheKey)
@@ -175,6 +176,10 @@ func newCache(
 
 			return respCache, nil
 		})
+
+		if err != nil {
+			hlog.CtxErrorf(ctx, singleFlightErrorFormat, err)
+		}
 
 		if !inFlight {
 			replyWithCache(ctx, c, options, rawRespCache.(*ResponseCache))
