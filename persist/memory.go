@@ -46,7 +46,12 @@ import (
 	"reflect"
 	"time"
 
+	"github.com/cloudwego/hertz/pkg/common/hlog"
 	"github.com/jellydator/ttlcache/v2"
+)
+
+const (
+	setTTLErrorFormat = "[CACHE] set ttl for memory store error: %s"
 )
 
 // MemoryStore local memory cache store
@@ -57,7 +62,9 @@ type MemoryStore struct {
 // NewMemoryStore allocate a local memory store with default expiration
 func NewMemoryStore(defaultExpiration time.Duration) *MemoryStore {
 	cacheStore := ttlcache.NewCache()
-	_ = cacheStore.SetTTL(defaultExpiration)
+	if err := cacheStore.SetTTL(defaultExpiration); err != nil {
+		hlog.Errorf(setTTLErrorFormat, err)
+	}
 
 	// disable SkipTTLExtensionOnHit default
 	cacheStore.SkipTTLExtensionOnHit(true)

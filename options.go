@@ -162,8 +162,8 @@ func WithSingleFlightForgetTimeout(forgetTimeout time.Duration) Option {
 	}
 }
 
-// IgnoreQueryOrder will ignore the queries order in url when generate cache key . This option only takes effect in CacheByRequestURI function
-func IgnoreQueryOrder(b bool) Option {
+// WithIgnoreQueryOrder will ignore the queries order in url when generate cache key . This option only takes effect in CacheByRequestURI function
+func WithIgnoreQueryOrder(b bool) Option {
 	return Option{
 		F: func(o *Options) {
 			o.ignoreQueryOrder = b
