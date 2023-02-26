@@ -42,8 +42,8 @@ import (
 
     "github.com/cloudwego/hertz/pkg/app"
     "github.com/cloudwego/hertz/pkg/app/server"
-	"github.com/hertz-contrib/cache"
-	"github.com/hertz-contrib/cache/persist"
+    "github.com/hertz-contrib/cache"
+    "github.com/hertz-contrib/cache/persist"
 )
 
 func main() {
@@ -90,8 +90,8 @@ import (
     "github.com/cloudwego/hertz/pkg/app"
     "github.com/cloudwego/hertz/pkg/app/server"
     "github.com/go-redis/redis/v8"
-	"github.com/hertz-contrib/cache"
-	"github.com/hertz-contrib/cache/persist"
+    "github.com/hertz-contrib/cache"
+    "github.com/hertz-contrib/cache/persist"
 )
 
 func main() {
