@@ -61,7 +61,6 @@ func TestOptions(t *testing.T) {
 		beforeReplyWithCacheCallback: defaultBeforeReplyWithCacheCallback,
 		shareSingleFlightCallback:    defaultShareSingleFlightCallback,
 		singleFlightForgetTimeout:    1 * time.Second,
-		ignoreQueryOrder:             false,
 		prefixKey:                    "prefix1",
 		withoutHeader:                false,
 	}
@@ -81,7 +80,6 @@ func TestOptions(t *testing.T) {
 	assert.DeepEqual(t, "", z)
 	assert.DeepEqual(t, 1*time.Second, options.singleFlightForgetTimeout)
 	assert.DeepEqual(t, "prefix1", options.prefixKey)
-	assert.False(t, options.ignoreQueryOrder)
 	assert.False(t, options.withoutHeader)
 
 	opts := make([]Option, 0)
@@ -91,20 +89,19 @@ func TestOptions(t *testing.T) {
 				CacheKey: "test-key2",
 			}
 		}),
-		WithOnHitCache(func(c context.Context, ctx *app.RequestContext) {
+		WithOnHitCache(func(ctx context.Context, cc *app.RequestContext) {
 			w = "W"
 		}),
-		WithOnMissCache(func(c context.Context, ctx *app.RequestContext) {
+		WithOnMissCache(func(ctx context.Context, cc *app.RequestContext) {
 			x = "X"
 		}),
 		WithBeforeReplyWithCache(func(c *app.RequestContext, cache *ResponseCache) {
 			y = "Y"
 		}),
 		WithSingleFlightForgetTimeout(2*time.Second),
-		WithOnShareSingleFlight(func(ctx context.Context, c *app.RequestContext) {
+		WithOnShareSingleFlight(func(ctx context.Context, cc *app.RequestContext) {
 			z = "Z"
 		}),
-		WithIgnoreQueryOrder(true),
 		WithoutHeader(true),
 		WithPrefixKey("prefix2"),
 	)
@@ -124,6 +121,5 @@ func TestOptions(t *testing.T) {
 	assert.DeepEqual(t, "Z", z)
 	assert.DeepEqual(t, 2*time.Second, options.singleFlightForgetTimeout)
 	assert.DeepEqual(t, "prefix2", options.prefixKey)
-	assert.True(t, options.ignoreQueryOrder)
 	assert.True(t, options.withoutHeader)
 }

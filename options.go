@@ -59,9 +59,8 @@ type Options struct {
 	singleFlightForgetTimeout time.Duration
 	shareSingleFlightCallback OnShareSingleFlightCallback
 
-	ignoreQueryOrder bool
-	prefixKey        string
-	withoutHeader    bool
+	prefixKey     string
+	withoutHeader bool
 }
 
 // OnHitCacheCallback define the callback when use cache
@@ -158,15 +157,6 @@ func WithSingleFlightForgetTimeout(forgetTimeout time.Duration) Option {
 	return Option{
 		F: func(o *Options) {
 			o.singleFlightForgetTimeout = forgetTimeout
-		},
-	}
-}
-
-// WithIgnoreQueryOrder will ignore the queries order in url when generate cache key . This option only takes effect in CacheByRequestURI function
-func WithIgnoreQueryOrder(b bool) Option {
-	return Option{
-		F: func(o *Options) {
-			o.ignoreQueryOrder = b
 		},
 	}
 }
