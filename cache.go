@@ -271,7 +271,10 @@ type ResponseCache struct {
 
 func (c *ResponseCache) fillWithCacheWriter(cacheWriter *responseCacheWriter, withoutHeader bool) {
 	c.Status = cacheWriter.StatusCode()
-	c.Data = cacheWriter.Body()
+	body := cacheWriter.Body()
+	buf := make([]byte, len(body))
+	copy(buf, body)
+	c.Data = buf
 	if !withoutHeader {
 		c.Header = make(map[string][]string)
 		for _, val := range cacheWriter.Header.GetHeaders() {
