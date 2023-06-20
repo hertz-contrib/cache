@@ -264,8 +264,7 @@ func TestNewCache_Memory(t *testing.T) {
 			}
 		})))
 	h.GET("/tmp-cache/*path", func(ctx context.Context, c *app.RequestContext) {
-		key := string(c.Request.Path())
-		if data, ok := original[key]; ok {
+		if data, ok := original[string(c.Request.Path())]; ok {
 			_, _ = c.Response.BodyWriter().Write(data)
 			return
 		}
