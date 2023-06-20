@@ -43,6 +43,7 @@ package cache
 import (
 	"context"
 	"fmt"
+	"io"
 	"math/rand"
 	"net/http"
 	"sync"
@@ -51,6 +52,7 @@ import (
 	"time"
 
 	"github.com/cloudwego/hertz/pkg/app"
+	"github.com/cloudwego/hertz/pkg/app/server"
 	"github.com/cloudwego/hertz/pkg/common/config"
 	"github.com/cloudwego/hertz/pkg/common/test/assert"
 	"github.com/cloudwego/hertz/pkg/common/ut"
@@ -244,4 +246,59 @@ func TestPrefixKey(t *testing.T) {
 
 	w2 := ut.PerformRequest(handler, "GET", requestPath, nil)
 	assert.NotEqual(t, w1.Body, w2.Body)
+}
+
+func TestNewCache_Memory(t *testing.T) {
+	h := server.New(
+		server.WithHostPorts("127.0.0.1:9233"))
+	original := map[string][]byte{
+		"/tmp-cache/ping1": []byte("{\"data\":{\"num\":1111111111}}"),
+		"/tmp-cache/ping2": []byte("{\"data\":{\"num\":2222222222222222222}}"),
+		"/tmp-cache/ping3": []byte("{\"data\":{\"num\":3333333333333333333333333333}}"),
+	}
+	h.Use(NewCache(persist.NewMemoryStore(time.Second), 3*time.Second,
+		WithCacheStrategyByRequest(func(ctx context.Context, c *app.RequestContext) (bool, Strategy) {
+			return true, Strategy{
+				CacheKey:      c.Request.URI().String(),
+				CacheDuration: 5 * time.Second,
+			}
+		})))
+	h.GET("/tmp-cache/*path", func(ctx context.Context, c *app.RequestContext) {
+		if data, ok := original[string(c.Request.Path())]; ok {
+			_, _ = c.Response.BodyWriter().Write(data)
+			return
+		}
+	})
+	go h.Spin()
+
+	tests := []struct {
+		want []byte
+		url  string
+	}{
+		{
+			want: original["/tmp-cache/ping1"],
+			url:  "http://127.0.0.1:9233/tmp-cache/ping1",
+		},
+		{
+			want: original["/tmp-cache/ping2"],
+			url:  "http://127.0.0.1:9233/tmp-cache/ping2",
+		},
+		{
+			want: original["/tmp-cache/ping3"],
+			url:  "http://127.0.0.1:9233/tmp-cache/ping3",
+		},
+	}
+
+	for i := 0; i < 10; i++ {
+		for _, tt := range tests {
+			t.Run("cache data", func(t *testing.T) {
+				resp, err := http.Get(tt.url)
+				assert.Nil(t, err)
+				body, err := io.ReadAll(resp.Body)
+				assert.Nil(t, err)
+				got := body
+				assert.DeepEqual(t, string(tt.want), string(got))
+			})
+		}
+	}
 }
