@@ -190,32 +190,51 @@ func newCache(
 
 // NewCacheByRequestURI a shortcut function for caching response by uri
 func NewCacheByRequestURI(defaultCacheStore persist.CacheStore, defaultExpire time.Duration, opts ...Option) app.HandlerFunc {
-	options := newOptions(opts...)
-
-	var cacheStrategy GetCacheStrategyByRequest
-	if options.ignoreQueryOrder {
-		cacheStrategy = func(ctx context.Context, c *app.RequestContext) (bool, Strategy) {
-			newUri, err := getRequestUriIgnoreQueryOrder(c.Request.URI().String())
-			if err != nil {
-				hlog.CtxErrorf(ctx, getRequestUriIgnoreQueryOrderErrorFormat, err)
-				newUri = c.Request.URI().String()
-			}
-
-			return true, Strategy{
-				CacheKey: newUri,
-			}
+	cacheStrategy := func(ctx context.Context, c *app.RequestContext) (bool, Strategy) {
+		return true, Strategy{
+			CacheKey: string(c.Request.RequestURI()),
 		}
-	} else {
-		cacheStrategy = func(ctx context.Context, c *app.RequestContext) (bool, Strategy) {
-			return true, Strategy{
-				CacheKey: c.Request.URI().String(),
-			}
+	}
+	var o []Option
+	o = append(o, WithCacheStrategyByRequest(cacheStrategy))
+	o = append(o, opts...)
+	return NewCache(defaultCacheStore, defaultExpire, o...)
+}
+
+// NewCacheByRequestURIWithIgnoreQueryOrder a shortcut function for caching response by uri and ignore query param order.
+func NewCacheByRequestURIWithIgnoreQueryOrder(defaultCacheStore persist.CacheStore, defaultExpire time.Duration, opts ...Option) app.HandlerFunc {
+	cacheStrategy := func(ctx context.Context, c *app.RequestContext) (bool, Strategy) {
+		newUri, err := getRequestUriIgnoreQueryOrder(string(c.Request.RequestURI()))
+		if err != nil {
+			hlog.CtxErrorf(ctx, getRequestUriIgnoreQueryOrderErrorFormat, err)
+			newUri = string(c.Request.RequestURI())
+		}
+
+		return true, Strategy{
+			CacheKey: newUri,
 		}
 	}
 
-	options.getCacheStrategyByRequest = cacheStrategy
+	var o []Option
+	o = append(o, WithCacheStrategyByRequest(cacheStrategy))
+	o = append(o, opts...)
 
-	return newCache(defaultCacheStore, defaultExpire, options)
+	return NewCache(defaultCacheStore, defaultExpire, o...)
+}
+
+// NewCacheByRequestPath a shortcut function for caching response by url path, means will discard the query params
+func NewCacheByRequestPath(defaultCacheStore persist.CacheStore, defaultExpire time.Duration, opts ...Option) app.HandlerFunc {
+	cacheStrategy := func(ctx context.Context, c *app.RequestContext) (bool, Strategy) {
+		return true, Strategy{
+			CacheKey: b2s(c.Request.Path()),
+		}
+	}
+
+	var o []Option
+	o = append(o, WithCacheStrategyByRequest(cacheStrategy))
+	o = append(o, opts...)
+
+	return NewCache(defaultCacheStore, defaultExpire, o...)
 }
 
 func getRequestUriIgnoreQueryOrder(requestURI string) (string, error) {
@@ -245,17 +264,6 @@ func getRequestUriIgnoreQueryOrder(requestURI string) (string, error) {
 	}
 
 	return parsedUrl.Path + "?" + strings.Join(queryVals, "&"), nil
-}
-
-// NewCacheByRequestPath a shortcut function for caching response by url path, means will discard the query params
-func NewCacheByRequestPath(defaultCacheStore persist.CacheStore, defaultExpire time.Duration, opts ...Option) app.HandlerFunc {
-	opts = append(opts, WithCacheStrategyByRequest(func(ctx context.Context, c *app.RequestContext) (bool, Strategy) {
-		return true, Strategy{
-			CacheKey: b2s(c.Request.Path()),
-		}
-	}))
-
-	return NewCache(defaultCacheStore, defaultExpire, opts...)
 }
 
 func init() {
