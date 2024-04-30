@@ -285,13 +285,13 @@ func (c *ResponseCache) fillWithCacheWriter(cacheWriter *responseCacheWriter, wi
 	c.Data = buf
 	if !withoutHeader {
 		c.Header = make(map[string][]string)
-		for _, val := range cacheWriter.Header.GetHeaders() {
-			if c.Header.Values(b2s(val.GetKey())) != nil {
-				c.Header.Add(b2s(val.GetKey()), b2s(val.GetValue()))
+		cacheWriter.Header.VisitAll(func(key, value []byte) {
+			if c.Header.Get(b2s(key)) != "" {
+				c.Header.Add(b2s(key), b2s(value))
 			} else {
-				c.Header.Set(b2s(val.GetKey()), b2s(val.GetValue()))
+				c.Header.Set(b2s(key), b2s(value))
 			}
-		}
+		})
 	}
 }
 
