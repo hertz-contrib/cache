@@ -60,9 +60,10 @@ func main() {
 
 	var cacheHitCount, cacheMissCount int32
 
-	h.Use(cache.NewCacheByRequestURI(
+	h.Use(cache.NewCacheByKeyStrategy(
 		memoryStore,
 		2*time.Second,
+		cache.StrategyByURI,
 		cache.WithOnHitCache(func(ctx context.Context, c *app.RequestContext) {
 			atomic.AddInt32(&cacheHitCount, 1)
 		}),
