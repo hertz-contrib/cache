@@ -302,3 +302,14 @@ func TestNewCache_Memory(t *testing.T) {
 		}
 	}
 }
+
+func TestCacheByURIWithIgnoreQueryOrder(t *testing.T) {
+	memoryStore := persist.NewMemoryStore(1 * time.Minute)
+	cacheURIMiddleware := NewCacheByRequestURIWithIgnoreQueryOrder(memoryStore, 3*time.Second)
+	handler := hertzHandler(cacheURIMiddleware, false)
+
+	w1 := ut.PerformRequest(handler, "GET", "/cache?uid=u1&b=2&a=1", nil)
+	w2 := ut.PerformRequest(handler, "GET", "/cache?a=1&uid=u1&b=2", nil)
+
+	assert.DeepEqual(t, w1.Body, w2.Body)
+}

@@ -64,12 +64,12 @@ type Options struct {
 }
 
 // OnHitCacheCallback define the callback when use cache
-type OnHitCacheCallback app.HandlerFunc
+type OnHitCacheCallback func(ctx context.Context, c *app.RequestContext)
 
 var defaultHitCacheCallback = func(ctx context.Context, c *app.RequestContext) {}
 
 // OnMissCacheCallback define the callback when use cache
-type OnMissCacheCallback app.HandlerFunc
+type OnMissCacheCallback func(ctx context.Context, c *app.RequestContext)
 
 var defaultMissCacheCallback = func(ctx context.Context, c *app.RequestContext) {}
 
